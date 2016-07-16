@@ -3,8 +3,8 @@ var express = require("express"),
 	validUrl = require("valid-url"),
 	mongo = require("mongodb").MongoClient;
 
-var dbName = "mongodb://localhost:27017/urls",
-	collectionName = "url";
+var dbName = process.env.DB_NAME || "mongodb://localhost:27017/urls",
+	collectionName = process.env.COLLECTION_NAME || "url";
 
 var app = express();
 
