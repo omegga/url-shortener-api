@@ -86,7 +86,7 @@ app.get("/new/*", function(req, res) {
 				});
 				do {
 					random = Math.floor(Math.random()*1000);
-				} while (idList.indexOf(random)>0);
+				} while (idList.indexOf(random)>-1);
 				
 				insert(random, url, function() {
 					var shortener = {
