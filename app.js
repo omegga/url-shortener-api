@@ -6,8 +6,16 @@ const mongo = require('mongodb').MongoClient;
 const shortid = require('shortid');
 
 dotenv.config();
-const DB_NAME = process.env.DB_NAME || "mongodb://localhost:27017/urls";
-const COLLECTION_NAME = process.env.COLLECTION_NAME || "url";
+const DB_NAME = process.env.DB_NAME;
+const COLLECTION_NAME = process.env.COLLECTION_NAME;
+const NODE_ENV = process.env.NODE_ENV;
+const PORT = process.env.PORT;
+
+if (!DB_NAME || !COLLECTION_NAME || !NODE_ENV || !PORT) {
+  console.error('environment variables are not defined');
+  process.exit();
+}
+
 const EXAMPLE_URL = 'https://www.google.com';
 const MESSAGE_TO_USER = "pass a url to create a new url shortener";
 const USAGE_TEXT = "use the shortener to access the passed url";
@@ -18,9 +26,9 @@ const NOT_VALID_ID_TEXT = "This is not a valid id.";
 function createShortenerResponse(url, shortener, hostname) {
   return {
     passed_url: url,
-    shortener: process.env.NODE_ENV === 'production'
+    shortener: NODE_ENV === 'production'
       ? `https://${hostname}/${shortener}`
-      : `http://${hostname}:${process.env.PORT}/${shortener}`,
+      : `http://${hostname}:${PORT}/${shortener}`,
     message_to_user: MESSAGE_TO_USER,
     usage: USAGE_TEXT
   };
@@ -80,7 +88,7 @@ mongo.connect(DB_NAME, (err, db) => {
     });
   });
   
-  app.listen(process.env.PORT, () => {
+  app.listen(PORT, () => {
     console.log("server listening on port " + process.env.PORT);
   });
 });
