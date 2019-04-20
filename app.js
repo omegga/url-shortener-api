@@ -1,18 +1,18 @@
 
-var express = require("express"),
-  validUrl = require("valid-url"),
-  dotenv = require('dotenv')
-	mongo = require("mongodb").MongoClient;
+const express = require("express");
+const validUrl = require("valid-url");
+const dotenv = require('dotenv');
+const mongo = require("mongodb").MongoClient;
 
 dotenv.config();
-var dbName = process.env.DB_NAME || "mongodb://localhost:27017/urls",
-	collectionName = process.env.COLLECTION_NAME || "url";
+const dbName = process.env.DB_NAME || "mongodb://localhost:27017/urls";
+const collectionName = process.env.COLLECTION_NAME || "url";
 
-var app = express();
+const app = express();
 
 //Connect to database
 function connect(next) {
-	mongo.connect(dbName, function(err, db) {
+	mongo.connect(dbName, (err, db) => {
 		if (err) {
 			throw err;
 		} else {
@@ -23,9 +23,9 @@ function connect(next) {
 
 //find all url shorteners
 function findAll(next) {
-	connect(function(db) {
-		var collection = db.collection(collectionName);
-		collection.find().toArray(function(err, docs) {
+	connect(db => {
+		const collection = db.collection(collectionName);
+		collection.find().toArray((err, docs) => {
 			if (err) {
 				throw err;
 			} else {
@@ -38,9 +38,9 @@ function findAll(next) {
 
 //find one url shortener
 function find(id, next) {
-	connect(function(db) {
-		var collection = db.collection(collectionName);
-		collection.find({"id":id}).toArray(function(err, doc) {
+	connect(db => {
+		const collection = db.collection(collectionName);
+		collection.find({ "id": id }).toArray((err, doc) => {
 			if (err) {
 				throw err;
 			} else {
@@ -53,10 +53,10 @@ function find(id, next) {
 
 //insert a new url shortener into collection
 function insert(id, url, next) {
-	connect(function(db) {
-		var collection = db.collection(collectionName);
+	connect(db => {
+		const collection = db.collection(collectionName);
 		id = id.toString();
-		collection.insertOne({"id":id,"path":url}, function(err, r) {
+		collection.insertOne({ "id": id, "path": url }, (err, r) => {
 			if (err) {
 				throw err;
 			} else {
@@ -72,30 +72,30 @@ app.use((req, res, next) => {
   next();
 })
 
-app.get("/", function(req, res) {
+app.get("/", (req, res) => {
 	//redirect to an example
 	res.redirect(`/new/https://www.google.com`);
 });
 
-app.get("/new/*", function(req, res) {
+app.get("/new/*", (req, res) => {
 		//retrieve passed url and verify that it's a valid url
 		//retrieve all url shorteners from database
 		//and check available id for the new url shortener
 		//insert url shortener document in database
 		//display the url shortener json document to user
-		var url = req.params[0];
+		const url = req.params[0];
 		if (validUrl.isUri(url)) {
-			findAll(function(docs){
-				var idList = [],
-					random;
-				docs.forEach(function(doc){
+			findAll(docs => {
+				const idList = [];
+				let random;
+				docs.forEach(doc => {
 						idList.push(doc.id);
 				});
 				do {
-					random = Math.floor(Math.random()*1000);
-				} while (idList.indexOf(random)>-1);
+					random = Math.floor(Math.random() * 1000);
+				} while (idList.indexOf(random) > -1);
 				
-				insert(random, url, function() {
+				insert(random, url, () => {
 					var shortener = {
 						passed_url:url,
             shortener: process.env.NODE_ENV === 'production' 
@@ -113,14 +113,14 @@ app.get("/new/*", function(req, res) {
 		}
 });
 
-app.get("/:id", function(req, res) {
+app.get("/:id", (req, res) => {
 	//verify if id is number
 	//if not, send 404 error
 	//otherwise, if url id is found in collection, redirect to url
 	//else, display a message
-	var id = req.params.id;
+	const { id } = req.params;
 	if(!isNaN(id)) {
-		find(id.toString(), function(doc) {
+		find(id.toString(), doc => {
 			if (doc[0]) {
 				res.redirect(doc[0].path);
 			} else {
@@ -133,6 +133,6 @@ app.get("/:id", function(req, res) {
 });
 
 
-app.listen(process.env.PORT, function() {
+app.listen(process.env.PORT, () => {
 	console.log("server listening");
 });
