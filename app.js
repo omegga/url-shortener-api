@@ -1,8 +1,10 @@
 
 var express = require("express"),
-	validUrl = require("valid-url"),
+  validUrl = require("valid-url"),
+  dotenv = require('dotenv')
 	mongo = require("mongodb").MongoClient;
 
+dotenv.config();
 var dbName = process.env.DB_NAME || "mongodb://localhost:27017/urls",
 	collectionName = process.env.COLLECTION_NAME || "url";
 
@@ -65,9 +67,14 @@ function insert(id, url, next) {
 	});
 }
 
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
+})
+
 app.get("/", function(req, res) {
 	//redirect to an example
-	res.redirect("https://"+req.hostname+"/new/https://www.google.com");
+	res.redirect(`/new/https://www.google.com`);
 });
 
 app.get("/new/*", function(req, res) {
@@ -91,7 +98,9 @@ app.get("/new/*", function(req, res) {
 				insert(random, url, function() {
 					var shortener = {
 						passed_url:url,
-						shortener:"https://"+req.hostname+"/"+random,
+            shortener: process.env.NODE_ENV === 'production' 
+              ? `https://${req.hostname}/${random}`
+              : `http://${req.hostname}:${process.env.PORT}/${random}`,
 						message_to_user:"pass a url to create a new url shortener",
 						usage:"use the shortener to access the passed url"
 					};
